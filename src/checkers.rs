@@ -1,5 +1,5 @@
 use proc_macro2::Span;
-use proc_macro_error::emit_error;
+use proc_macro_error::{abort, emit_error};
 
 use crate::models::{JsonSchema, JsonSchemaTypes};
 
@@ -7,7 +7,7 @@ pub fn check_properties_match_required(schema: &JsonSchema) {
     if (schema.properties.is_none() && schema.properties_span.is_none())
         || (schema.required.is_none() && schema.required_span.is_none())
     {
-        return ();
+        return;
     }
 
     let properties_keys: Vec<&String> = schema
@@ -24,14 +24,14 @@ pub fn check_properties_match_required(schema: &JsonSchema) {
     let (required_span, _) = schema.required_span.as_ref().unwrap();
 
     if required.len() != properties_keys.len() {
-        emit_error!(
+        abort!(
             required_span,
             "make sure to implement all the required properties"
         )
     }
 
     if !properties_keys.iter().all(|key| required.contains(*key)) {
-        emit_error!(
+        abort!(
             properties_span,
             "make sure all the properties keys match what's in the required"
         );
@@ -39,11 +39,11 @@ pub fn check_properties_match_required(schema: &JsonSchema) {
 }
 
 pub fn validate_keys(schema: &JsonSchema) {
-    check_string_type(&schema);
-    check_number_type(&schema);
-    check_array_type(&schema);
-    check_object_type(&schema);
-    other_checks(&schema);
+    check_string_type(schema);
+    check_number_type(schema);
+    check_array_type(schema);
+    check_object_type(schema);
+    other_checks(schema);
 }
 
 fn check_object_type(schema: &JsonSchema) {
@@ -137,7 +137,7 @@ fn get_key_span(have_span: Option<(Span, Span)>) -> Span {
 pub fn other_checks(schema: &JsonSchema) {
     if schema.depth == 1 && schema.title.is_none() {
         if let Some((type_span, _)) = schema.ty_span {
-            emit_error!(type_span, "the first title is required, consider adding it");
+            abort!(type_span, "the first title is required, consider adding it");
         }
     }
 }

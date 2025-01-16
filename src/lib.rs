@@ -13,27 +13,32 @@ use quote::{format_ident, quote};
 #[proc_macro]
 pub fn jsonschema(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let schema = syn::parse_macro_input!(input as JsonSchema);
-    let title = format_ident!("{}", &schema.title.as_ref().unwrap());
 
-    let json = convert_raw_schema_to_json_sample(&schema, &schema.title.clone().unwrap());
+    if let Some(schema_title) = &schema.title {
+        let title = format_ident!("{}", schema_title);
 
-    let json_struct = &JsonMacroInput {
-        struct_name: title.clone(),
-        content: json,
-    };
+        let json = convert_raw_schema_to_json_sample(&schema, schema_title);
 
-    let mut output = proc_macro2::TokenStream::new();
+        let json_struct = &JsonMacroInput {
+            struct_name: title.clone(),
+            content: json,
+        };
 
-    let (main, al) = generate_structs(json_struct, &title);
+        let mut output = proc_macro2::TokenStream::new();
 
-    output.extend(get_serde_const(&schema, &title));
+        let (main, al) = generate_structs(json_struct, &title);
 
-    output.extend(quote! {
-        #main
-        #(#al)*
-    });
+        output.extend(get_serde_const(&schema, &title));
 
-    output.into()
+        output.extend(quote! {
+            #main
+            #(#al)*
+        });
+
+        return output.into();
+    }
+
+    proc_macro::TokenStream::new()
 }
 
 fn get_serde_const(schema: &JsonSchema, title: &syn::Ident) -> proc_macro2::TokenStream {

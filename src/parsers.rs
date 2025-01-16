@@ -161,7 +161,7 @@ impl Parse for JsonSchema {
 
         if schema.required.is_some() && schema.properties.is_none() {
             if let Some((_, required_span)) = schema.required_span {
-                emit_error!(
+                abort!(
                     required_span,
                     "make sure to implement what's in the required"
                 );

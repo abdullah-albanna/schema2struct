@@ -116,7 +116,7 @@ pub fn generate_structs(
 
     // Generate the main struct with optional rename strategy
     let main_struct = quote! {
-        #[derive(::serde::Deserialize, ::serde::Serialize, ::std::clone::Clone, ::std::fmt::Debug)]
+        #[derive(::serde::Deserialize, ::serde::Serialize, ::std::clone::Clone, ::std::fmt::Debug, ::std::default::Default)]
         #[serde(rename_all = "camelCase")]
         pub struct #base_name {
             #(#fields),*
