@@ -43,7 +43,7 @@ fn get_serde_const(schema: &JsonSchema, title: &syn::Ident) -> proc_macro2::Toke
     let const_json_ident = format_ident!("{}_{}", title.to_string().to_uppercase(), "JSON_VALUE");
 
     quote! {
-        static #const_json_ident: ::std::sync::LazyLock<::serde_json::Value> =
+        pub static #const_json_ident: ::std::sync::LazyLock<::serde_json::Value> =
             ::std::sync::LazyLock::new(||
                 ::serde_json::from_str(#serde_value_str)
                     .expect("Couldn't convert the text into valid json")

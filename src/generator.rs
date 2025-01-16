@@ -108,7 +108,7 @@ pub fn generate_structs(
         // so you can deserialize with camelCase and snake_case
         let field = quote! {
             #[serde(alias = #key)]
-            #field_name: #field_type
+            pub #field_name: #field_type
         };
 
         fields.push(field);
@@ -118,7 +118,7 @@ pub fn generate_structs(
     let main_struct = quote! {
         #[derive(::serde::Deserialize, ::serde::Serialize, ::std::clone::Clone, ::std::fmt::Debug)]
         #[serde(rename_all = "camelCase")]
-        struct #base_name {
+        pub struct #base_name {
             #(#fields),*
         }
     };
