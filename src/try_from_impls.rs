@@ -263,7 +263,7 @@ impl TryFrom<(syn::Ident, syn::Expr)> for JsonSchema {
 
             JsonSchemaKeywords::Title => match schema_value {
                 JsonSchemaValues::Str(s) => {
-                    schema.title = s;
+                    schema.title = Some(s);
                 }
                 _ => return Err(syn::Error::new(value_span, "title must be a string")),
             },

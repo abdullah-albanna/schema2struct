@@ -11,9 +11,7 @@ use syn::{
 };
 
 use crate::{
-    checkers::{
-        check_properties_match_required, check_that_every_key_is_in_the_right_place, other_checks,
-    },
+    checkers::{check_properties_match_required, validate_keys},
     models::{JsonSchema, JsonSchemaTypes},
 };
 
@@ -79,9 +77,19 @@ impl Parse for JsonSchema {
                 "items" => {
                     let Items { span, items_type } = handle_items(&mut schema, &input, &key_span)?;
 
-                    let type_schema = JsonSchema {
-                        ty: items_type,
-                        ..Default::default()
+                    // we can either use
+                    //
+                    // items: string
+                    //
+                    // or
+                    //
+                    // items: { type: string }
+                    let type_schema = match items_type {
+                        ItemsValue::Block(s) => s,
+                        ItemsValue::Type(t) => JsonSchema {
+                            ty: t,
+                            ..Default::default()
+                        },
                     };
 
                     schema.items = Some(Box::new(type_schema));
@@ -112,11 +120,6 @@ impl Parse for JsonSchema {
             let value_span = value_expr.span();
 
             let value = JsonSchema::try_from((key, value_expr))?;
-
-            if schema.title.is_empty() && !value.title.is_empty() {
-                schema.title = value.title;
-                schema.title_span = Some((key_span, value_span));
-            }
 
             // if the main schema is none and the other is not none, then we add items
             //
@@ -151,6 +154,7 @@ impl Parse for JsonSchema {
                     description,
                     required,
                     properties,
+                    title,
                 ]
             );
         }
@@ -164,30 +168,13 @@ impl Parse for JsonSchema {
             }
         }
 
-        if let Some((properties, required)) =
-            schema.properties.as_ref().zip(schema.required.as_ref())
-        {
-            if let Some(((_, properties_span), (_, required_span))) = schema
-                .properties_span
-                .as_ref()
-                .zip(schema.required_span.as_ref())
-            {
-                let properties_keys = &properties.keys().collect::<Vec<_>>();
-                check_properties_match_required(
-                    properties_keys,
-                    properties_span,
-                    required,
-                    required_span,
-                );
-            }
-        }
-
         if matches!(schema.ty, JsonSchemaTypes::None) {
             abort!(schema.current_key_span.unwrap(), "`type` must be set");
         }
 
-        check_that_every_key_is_in_the_right_place(&schema);
-        other_checks(&schema);
+        check_properties_match_required(&schema);
+
+        validate_keys(&schema);
 
         // if matches!(schema.ty, JsonSchemaTypes::Array) && schema.title.is_empty() {
         //     emit_error!(schema.current_key_span.unwrap(), "`title` must be set");
@@ -251,9 +238,15 @@ fn handle_properties(input: &ParseStream) -> Result<Properties, syn::Error> {
 }
 
 /// used as a result for handling the items values
+
+enum ItemsValue {
+    Block(JsonSchema),
+    Type(JsonSchemaTypes),
+}
+
 struct Items {
     span: Span,
-    items_type: JsonSchemaTypes,
+    items_type: ItemsValue,
 }
 
 fn handle_items(
@@ -270,7 +263,7 @@ fn handle_items(
         if schema.items.is_none() {
             return Ok(Items {
                 span: type_ident_span,
-                items_type,
+                items_type: ItemsValue::Type(items_type),
             });
 
             // schema.items = Some(items_type);
@@ -289,11 +282,8 @@ fn handle_items(
         if schema.items.is_none() {
             return Ok(Items {
                 span: nested_tokens_span,
-                items_type: nested_schema.ty,
+                items_type: ItemsValue::Block(nested_schema),
             });
-
-            // schema.items = Some(nested_schema.ty);
-            // schema.items_span = Some((key_span, nested_tokens_span));
         } else {
             abort!(nested_tokens_span, "remove duplicated keys");
         }
