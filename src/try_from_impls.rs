@@ -256,7 +256,7 @@ impl TryFrom<(syn::Ident, syn::Expr)> for JsonSchema {
                 JsonSchemaValues::Array(_) => {
                     return Err(syn::Error::new(value_span, "const value can't be an array"))
                 }
-                value @ _ => schema.const_value = Some(value),
+                value => schema.const_value = Some(value),
             },
 
             JsonSchemaKeywords::Default => match schema_value {
@@ -266,7 +266,7 @@ impl TryFrom<(syn::Ident, syn::Expr)> for JsonSchema {
                         "default value can't be an ident",
                     ))
                 }
-                value @ _ => schema.default = Some(value),
+                value => schema.default = Some(value),
             },
 
             JsonSchemaKeywords::Title => match schema_value {

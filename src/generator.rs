@@ -184,6 +184,7 @@ fn get_in_type(schema: &JsonSchema) -> Value {
     }
 }
 
+#[allow(clippy::only_used_in_recursion)]
 pub fn convert_raw_schema_to_json_sample(schema: &JsonSchema, title: &String) -> Value {
     let mut json = Map::new();
 
@@ -199,7 +200,7 @@ pub fn convert_raw_schema_to_json_sample(schema: &JsonSchema, title: &String) ->
         for (key, property) in properties {
             json.insert(
                 key.to_owned(),
-                convert_raw_schema_to_json_sample(&property, title),
+                convert_raw_schema_to_json_sample(property, title),
             );
         }
     }

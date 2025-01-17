@@ -312,7 +312,7 @@ impl std::fmt::Display for JsonSchemaValues {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             JsonSchemaValues::Ident(ident) => f.write_str(&ident.to_string()),
-            JsonSchemaValues::Str(s) => f.write_str(&s),
+            JsonSchemaValues::Str(s) => f.write_str(s),
             JsonSchemaValues::Number(num) => f.write_str(&format!("{}", num)),
             JsonSchemaValues::Bool(b) => f.write_str(&format!("{}", b)),
             JsonSchemaValues::Char(c) => f.write_str(&format!("{}", c)),

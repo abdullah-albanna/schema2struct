@@ -27,7 +27,7 @@ impl Parse for JsonSchema {
         }
 
         let depth = if let Ok(i) = SCHEMA_DEPTH.try_read() {
-            i.clone()
+            *i
         } else {
             0
         };
@@ -260,10 +260,10 @@ fn handle_items(
         let items_type = JsonSchemaTypes::try_from(type_ident)?;
 
         if schema.items.is_none() {
-            return Ok(Items {
+            Ok(Items {
                 span: type_ident_span,
                 items_type: ItemsValue::Type(items_type),
-            });
+            })
 
             // schema.items = Some(items_type);
             // schema.items_span = Some((key_span, type_ident_span));
@@ -312,10 +312,10 @@ fn handle_contains(
         let contains = JsonSchemaTypes::try_from(contains_ident)?;
 
         if schema.contains.is_none() {
-            return Ok(Contains {
+            Ok(Contains {
                 span: contains_ident_span,
                 contains,
-            });
+            })
         } else {
             abort!(contains_ident_span, "remove duplicated keys");
         }
