@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use create_json_schema_struct_macro::create_json_schema_struct;
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
+use serde_json::{Map, Number, Value};
 
 /// used to identify what type is current schema
 ///
@@ -317,6 +318,44 @@ impl std::fmt::Display for JsonSchemaValues {
             JsonSchemaValues::Bool(b) => f.write_str(&format!("{}", b)),
             JsonSchemaValues::Char(c) => f.write_str(&format!("{}", c)),
             JsonSchemaValues::Array(array) => f.write_str(&format!("{:?}", array)),
+        }
+    }
+}
+
+impl JsonSchema {
+    pub fn to_json_sample(&self) -> Value {
+        let mut json = Map::new();
+
+        if !matches!(self.ty, JsonSchemaTypes::Object) {
+            return Self::get_in_type(self);
+        }
+
+        if let Some(struct_name) = self.struct_name.as_ref() {
+            json.insert("struct_name".into(), Value::String(struct_name.to_owned()));
+        }
+
+        if let Some(properties) = self.properties.as_ref() {
+            for (key, property) in properties {
+                json.insert(key.to_owned(), Self::to_json_sample(property));
+            }
+        }
+
+        json.into()
+    }
+
+    fn get_in_type(schema: &JsonSchema) -> Value {
+        match schema.ty {
+            JsonSchemaTypes::String => Value::String(String::new()),
+            JsonSchemaTypes::None => Value::Null,
+            JsonSchemaTypes::Number => Value::Number(Number::from(0)),
+            JsonSchemaTypes::Array => {
+                if let Some(items) = &schema.items {
+                    Value::Array(vec![Self::get_in_type(items)])
+                } else {
+                    Value::Array(Vec::new())
+                }
+            }
+            JsonSchemaTypes::Object => Value::Object(Map::new()),
         }
     }
 }

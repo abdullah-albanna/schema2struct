@@ -1,9 +1,7 @@
 use inflections::Inflect;
 use quote::{format_ident, quote, ToTokens};
-use serde_json::{Map, Number, Value};
+use serde_json::{Map, Value};
 use syn::Ident;
-
-use crate::models::{JsonSchema, JsonSchemaTypes};
 
 pub struct JsonMacroInput {
     pub struct_name: Ident,
@@ -166,44 +164,4 @@ fn infer_array_type(arr: &[Value]) -> (proc_macro2::TokenStream, Vec<proc_macro2
         Value::Bool(_) => (quote!(bool), Vec::new()),
         _ => (quote!(::serde_json::Value), Vec::new()),
     }
-}
-
-fn get_in_type(schema: &JsonSchema) -> Value {
-    match schema.ty {
-        JsonSchemaTypes::String => Value::String(String::new()),
-        JsonSchemaTypes::None => Value::Null,
-        JsonSchemaTypes::Number => Value::Number(Number::from(0)),
-        JsonSchemaTypes::Array => {
-            if let Some(items) = &schema.items {
-                Value::Array(vec![get_in_type(items)])
-            } else {
-                Value::Array(Vec::new())
-            }
-        }
-        JsonSchemaTypes::Object => Value::Object(Map::new()),
-    }
-}
-
-#[allow(clippy::only_used_in_recursion)]
-pub fn convert_raw_schema_to_json_sample(schema: &JsonSchema, title: &String) -> Value {
-    let mut json = Map::new();
-
-    if !matches!(schema.ty, JsonSchemaTypes::Object) {
-        return get_in_type(schema);
-    }
-
-    if let Some(struct_name) = schema.struct_name.as_ref() {
-        json.insert("struct_name".into(), Value::String(struct_name.to_owned()));
-    }
-
-    if let Some(properties) = schema.properties.as_ref() {
-        for (key, property) in properties {
-            json.insert(
-                key.to_owned(),
-                convert_raw_schema_to_json_sample(property, title),
-            );
-        }
-    }
-
-    json.into()
 }

@@ -4,7 +4,7 @@ mod models;
 mod parsers;
 mod try_from_impls;
 
-use generator::{convert_raw_schema_to_json_sample, generate_structs, JsonMacroInput};
+use generator::{generate_structs, JsonMacroInput};
 use models::JsonSchema;
 use proc_macro_error::proc_macro_error;
 use quote::{format_ident, quote};
@@ -17,7 +17,7 @@ pub fn jsonschema(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     if let Some(struct_name) = &schema.struct_name {
         let title = format_ident!("{}", struct_name);
 
-        let json = convert_raw_schema_to_json_sample(&schema, struct_name);
+        let json = schema.to_json_sample();
 
         let json_struct = &JsonMacroInput {
             struct_name: title.clone(),
