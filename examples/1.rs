@@ -9,7 +9,7 @@ jsonschema! {
     properties: {
         "sdc": {
             type: object,
-            struct: JSD
+            struct: key
         },
         "info": {
             type: number,

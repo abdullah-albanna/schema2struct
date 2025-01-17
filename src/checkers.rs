@@ -154,4 +154,16 @@ pub fn other_checks(schema: &JsonSchema) {
             );
         }
     }
+
+    // Check if the struct_name exists and if depth is 1
+    if let Some(struct_name) = &schema.struct_name {
+        if schema.depth == 1 {
+            // If struct_name is "key", abort with an error message
+            if struct_name == "key" {
+                if let Some((_, struct_span)) = schema.struct_name_span {
+                    abort!(struct_span, "you can't use `key` from the root schema");
+                }
+            }
+        }
+    }
 }

@@ -67,7 +67,11 @@ pub fn generate_structs(
                 let nested_name = {
                     if let Some(struct_name_value) = obj.get("struct_name") {
                         if let Value::String(struct_name) = struct_name_value {
-                            format_ident!("{}", struct_name.to_pascal_case())
+                            if struct_name.eq("key") {
+                                format_ident!("{}", key.to_pascal_case())
+                            } else {
+                                format_ident!("{}", struct_name.to_pascal_case())
+                            }
                         } else {
                             unreachable!()
                         }
