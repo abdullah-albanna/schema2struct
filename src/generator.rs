@@ -27,8 +27,16 @@ pub fn generate_structs(
     let mut all_structs = Vec::new();
     let mut fields = Vec::new();
 
-    // Process each entry in the JSON-like structure
-    for (key, value) in json_struct.content.as_object().unwrap() {
+    let content = match json_struct.content.as_object() {
+        Some(obj) => obj,
+        None => &Map::new(),
+    };
+
+    for (key, value) in content {
+        if key.eq("struct_name") {
+            continue;
+        }
+
         let key = key.to_snake_case();
         // Just in case the identifier is not a valid struct name
         let field_name = format_ident!("{}", key);
@@ -58,7 +66,17 @@ pub fn generate_structs(
                 // struct UserAge;
                 //
                 //````
-                let nested_name = format_ident!("{}{}", base_name, key.to_pascal_case());
+                let nested_name = {
+                    if let Some(struct_name_value) = obj.get("struct_name") {
+                        if let Value::String(struct_name) = struct_name_value {
+                            format_ident!("{}", struct_name.to_pascal_case())
+                        } else {
+                            unreachable!()
+                        }
+                    } else {
+                        format_ident!("{}{}", base_name, key.to_pascal_case())
+                    }
+                };
 
                 let nested_macro_input = JsonMacroInput {
                     struct_name: json_struct.struct_name.clone(),
@@ -173,11 +191,17 @@ pub fn convert_raw_schema_to_json_sample(schema: &JsonSchema, title: &String) ->
         return get_in_type(schema);
     }
 
-    for (key, property) in schema.properties.as_ref().unwrap() {
-        json.insert(
-            key.to_owned(),
-            convert_raw_schema_to_json_sample(&property, title),
-        );
+    if let Some(struct_name) = schema.struct_name.as_ref() {
+        json.insert("struct_name".into(), Value::String(struct_name.to_owned()));
+    }
+
+    if let Some(properties) = schema.properties.as_ref() {
+        for (key, property) in properties {
+            json.insert(
+                key.to_owned(),
+                convert_raw_schema_to_json_sample(&property, title),
+            );
+        }
     }
 
     json.into()

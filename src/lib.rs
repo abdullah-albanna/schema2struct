@@ -14,10 +14,10 @@ use quote::{format_ident, quote};
 pub fn jsonschema(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let schema = syn::parse_macro_input!(input as JsonSchema);
 
-    if let Some(schema_title) = &schema.title {
-        let title = format_ident!("{}", schema_title);
+    if let Some(struct_name) = &schema.struct_name {
+        let title = format_ident!("{}", struct_name);
 
-        let json = convert_raw_schema_to_json_sample(&schema, schema_title);
+        let json = convert_raw_schema_to_json_sample(&schema, struct_name);
 
         let json_struct = &JsonMacroInput {
             struct_name: title.clone(),

@@ -94,6 +94,12 @@ pub fn create_json_schema_struct(input: TokenStream) -> TokenStream {
 
             #[serde(skip)]
             pub current_key_span: Option<proc_macro2::Span>,
+
+            #[serde(skip)]
+            pub struct_name: Option<String>,
+
+            #[serde(skip)]
+            pub struct_name_span: Option<(proc_macro2::Span, proc_macro2::Span)>
         }
     };
 

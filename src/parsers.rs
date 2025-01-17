@@ -155,6 +155,7 @@ impl Parse for JsonSchema {
                     required,
                     properties,
                     title,
+                    struct_name,
                 ]
             );
         }
@@ -169,16 +170,14 @@ impl Parse for JsonSchema {
         }
 
         if matches!(schema.ty, JsonSchemaTypes::None) {
-            abort!(schema.current_key_span.unwrap(), "`type` must be set");
+            if let Some(current_key_span) = schema.current_key_span {
+                abort!(current_key_span, "`type` must be set");
+            }
         }
 
         check_properties_match_required(&schema);
 
         validate_keys(&schema);
-
-        // if matches!(schema.ty, JsonSchemaTypes::Array) && schema.title.is_empty() {
-        //     emit_error!(schema.current_key_span.unwrap(), "`title` must be set");
-        // }
 
         Ok(schema)
     }

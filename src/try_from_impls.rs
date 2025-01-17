@@ -39,7 +39,9 @@ impl TryFrom<syn::Expr> for JsonSchemaValues {
 
             syn::Expr::Lit(literal) => match literal.lit {
                 syn::Lit::Str(s) => Ok(JsonSchemaValues::Str(s.value())),
-                syn::Lit::Int(int) => Ok(JsonSchemaValues::Number(int.base10_parse().unwrap())),
+                syn::Lit::Int(int) => Ok(JsonSchemaValues::Number(
+                    int.base10_parse().unwrap_or_default(),
+                )),
                 syn::Lit::Bool(b) => Ok(JsonSchemaValues::Bool(b.value)),
                 syn::Lit::Char(ch) => Ok(JsonSchemaValues::Char(ch.value())),
                 _ => Err(syn::Error::new(literal.span(), "invalid literal")),
@@ -85,6 +87,7 @@ impl TryFrom<syn::Ident> for JsonSchemaKeywords {
             "min_items" => Ok(JsonSchemaKeywords::MinItems),
             "unique_items" => Ok(JsonSchemaKeywords::UniqueItems),
             "contains" => Ok(JsonSchemaKeywords::Contains),
+            "struct" => Ok(JsonSchemaKeywords::Struct),
             _ => Err(syn::Error::new(value.span(), "Unknown keyword")),
         }
     }
@@ -107,7 +110,7 @@ impl TryFrom<syn::Ident> for Formats {
             "ipv6" => Ok(Formats::Ipv6),
             "uri" => Ok(Formats::Uri),
             _ => {
-                return Err(syn::Error::new(
+             Err(syn::Error::new(
                     value.span(),
                     "unsupported format, avaliables are: `data`, `time`, `date-time`, `email`, `hostname`, `ipv4`, `ipv6`, `uri`",
                 ))
@@ -136,6 +139,11 @@ impl TryFrom<(syn::Ident, syn::Expr)> for JsonSchema {
             JsonSchemaKeywords::Type => match schema_value {
                 JsonSchemaValues::Ident(ident) => schema.ty = JsonSchemaTypes::try_from(ident)?,
                 _ => return Err(syn::Error::new(value_span, "Invalid type")),
+            },
+
+            JsonSchemaKeywords::Struct => match schema_value {
+                JsonSchemaValues::Ident(ident) => schema.struct_name = Some(ident.to_string()),
+                _ => return Err(syn::Error::new(value_span, "only idents are allowed")),
             },
 
             JsonSchemaKeywords::UniqueItems => match schema_value {

@@ -4,35 +4,35 @@ use proc_macro_error::{abort, emit_error};
 use crate::models::{JsonSchema, JsonSchemaTypes};
 
 pub fn check_properties_match_required(schema: &JsonSchema) {
-    if (schema.properties.is_none() && schema.properties_span.is_none())
-        || (schema.required.is_none() && schema.required_span.is_none())
-    {
-        return;
-    }
-
-    let properties_keys: Vec<&String> = schema
+    let Some((properties, properties_span)) = schema
         .properties
         .as_ref()
-        .unwrap()
+        .zip(schema.properties_span.as_ref())
+    else {
+        return;
+    };
+
+    let Some((required, required_span)) =
+        schema.required.as_ref().zip(schema.required_span.as_ref())
+    else {
+        return;
+    };
+
+    let properties_keys: Vec<&String> = properties
         .iter()
         .map(|(property_key, _)| property_key)
         .collect();
 
-    let (properties_span, _) = schema.properties_span.as_ref().unwrap();
-
-    let required = schema.required.as_ref().unwrap();
-    let (required_span, _) = schema.required_span.as_ref().unwrap();
-
     if required.len() != properties_keys.len() {
         abort!(
-            required_span,
+            required_span.0,
             "make sure to implement all the required properties"
         )
     }
 
     if !properties_keys.iter().all(|key| required.contains(*key)) {
         abort!(
-            properties_span,
+            properties_span.0,
             "make sure all the properties keys match what's in the required"
         );
     }
@@ -131,13 +131,27 @@ fn check_string_type(schema: &JsonSchema) {
 }
 
 fn get_key_span(have_span: Option<(Span, Span)>) -> Span {
-    have_span.unwrap().0
+    have_span
+        .expect("every key should have the span of it, this is a bug")
+        .0
 }
 
 pub fn other_checks(schema: &JsonSchema) {
-    if schema.depth == 1 && schema.title.is_none() {
+    if !matches!(schema.ty, JsonSchemaTypes::Object) && schema.struct_name.is_some() {
+        if let Some((struct_name_span, _)) = schema.struct_name_span {
+            emit_error!(
+                struct_name_span,
+                "`struct` is only allowed in an object type"
+            )
+        }
+    }
+
+    if schema.depth == 1 && schema.struct_name.is_none() {
         if let Some((type_span, _)) = schema.ty_span {
-            abort!(type_span, "the first title is required, consider adding it");
+            abort!(
+                type_span,
+                "the first `struct` key is required, consider adding it"
+            );
         }
     }
 }

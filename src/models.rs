@@ -252,6 +252,7 @@ pub enum JsonSchemaKeywords {
     MaxItems,
     UniqueItems,
     Contains,
+    Struct,
 }
 
 /// stores what's after the `:`
