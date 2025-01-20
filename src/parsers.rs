@@ -15,9 +15,12 @@ use crate::{
     models::{JsonSchema, JsonSchemaTypes},
 };
 
-use jsonschema_macros::update_schema_fields;
+use schema2struct_macros::update_schema_fields;
 
-// we start with 0, and increment it from the begining by one, thus the root depth is 1
+/// Tracks the current depth of schema parsing
+///
+/// Starts at 0 and increments for each nested schema level
+/// Ensures proper handling of nested and root-level schemas
 static SCHEMA_DEPTH: RwLock<usize> = RwLock::new(0);
 
 impl Parse for JsonSchema {
@@ -131,6 +134,14 @@ impl Parse for JsonSchema {
                 schema.ty_span = Some((key_span, value_span));
             }
 
+            // a helper macro that basiclly does
+            //
+            // ```rust
+            //  if schema.#something.is_none() && value.#something.is_some() {
+            //      schema.#something = value.#something;
+            //      schema.#something_span = Some((key, value_span));
+            //  }
+            // ```
             update_schema_fields!(
                 schema,
                 value,
@@ -237,7 +248,6 @@ fn handle_properties(input: &ParseStream) -> Result<Properties, syn::Error> {
 }
 
 /// used as a result for handling the items values
-
 enum ItemsValue {
     Block(JsonSchema),
     Type(JsonSchemaTypes),

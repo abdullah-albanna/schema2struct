@@ -1,6 +1,6 @@
-use jsonschema::jsonschema;
+use schema2struct::schema2struct;
 
-jsonschema! {
+schema2struct! {
     type: object,
     struct: Hello,
     enum: ["hello", 12, true],

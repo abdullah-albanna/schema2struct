@@ -1,20 +1,30 @@
 [package]
-name = "jsonschema"
+name = "schema2struct"
 version = "0.1.0"
 edition = "2021"
+description = "Convert a JSON schema into Rust structs for efficient and type-safe data management."
+license = "MIT"
+authors = ["Abdullah Albanna <abdu.albanna@proton.me>"]
+repository = "https://github.com/abdullah-albanna/schema2struct"
+homepage = "https://github.com/abdullah-albanna/schema2struct"
+documentation = "https://docs.rs/schema2struct"
+readme = "README.md"
+keywords = ["json", "macro", "rust", "codegen", "struct", "schema"]
+categories = ["data-structures"]
 
 [lib]
 proc-macro = true
+name = "schema2struct"
 
 [dependencies]
 serde = {version = "1", features = ["derive"]}
 serde_json = "1"
-syn = { version = "2", features = ["full", "extra-traits", "parsing", "printing"]}
+syn = { version = "2", features = ["full"]}
 quote = "1"
 proc-macro2 = "1"
 proc-macro-error = "1"
 paste = "1"
 inflections = "1"
 
-jsonschema_macros = { path = "./jsonschema_macros" }
+schema2struct_macros = { path = "./schema2struct_macros" }
 create_json_schema_struct_macro = { path = "./create_json_schema_struct_macro" }

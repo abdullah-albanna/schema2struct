@@ -26,6 +26,10 @@ pub enum JsonSchemaTypes {
     None,
 }
 
+// the main struct holding all the data about every root and nested schemas
+// creates the schema struct but adds the *_span for every key
+//
+// it also puts the depth field and current_key_span filed
 create_json_schema_struct! {
     #[derive(Clone, Debug, Default, Serialize, Deserialize)]
     #[serde(rename_all = "camelCase")]
@@ -65,128 +69,7 @@ create_json_schema_struct! {
     }
 }
 
-/// the main struct holding all the data about every root and nested schemas
-// #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-// #[serde(rename_all = "camelCase")]
-// pub struct JsonSchema {
-//     #[serde(rename = "type")]
-//     pub ty: JsonSchemaTypes,
-
-//     #[serde(skip_serializing_if = "::std::option::Option::is_none")]
-//     pub title: Option<String>,
-
-//     #[serde(skip_serializing_if = "::std::option::Option::is_none")]
-//     pub description: Option<String>,
-
-//     #[serde(skip_serializing_if = "::std::option::Option::is_none")]
-//     pub default: Option<JsonSchemaValues>,
-
-//     #[serde(skip_serializing_if = "::std::option::Option::is_none")]
-//     pub examples: Option<Vec<String>>,
-
-//     #[serde(skip_serializing_if = "::std::option::Option::is_none")]
-//     #[serde(rename = "enum")]
-//     pub enum_values: Option<Vec<JsonSchemaValues>>,
-
-//     #[serde(skip_serializing_if = "::std::option::Option::is_none")]
-//     #[serde(rename = "const")]
-//     pub const_value: Option<JsonSchemaValues>,
-
-//     // object specific keys
-//     #[serde(skip_serializing_if = "::std::option::Option::is_none")]
-//     pub properties: Option<HashMap<String, JsonSchema>>,
-
-//     #[serde(skip_serializing_if = "::std::option::Option::is_none")]
-//     pub required: Option<Vec<String>>,
-
-//     // string specific keys
-//     #[serde(skip_serializing_if = "::std::option::Option::is_none")]
-//     pub min_lenght: Option<usize>,
-
-//     #[serde(skip_serializing_if = "::std::option::Option::is_none")]
-//     pub max_lenght: Option<usize>,
-
-//     #[serde(skip_serializing_if = "::std::option::Option::is_none")]
-//     pub pattern: Option<String>,
-
-//     #[serde(skip_serializing_if = "::std::option::Option::is_none")]
-//     pub format: Option<Formats>,
-
-//     // number specific keys
-//     #[serde(skip_serializing_if = "::std::option::Option::is_none")]
-//     pub minimum: Option<usize>,
-
-//     #[serde(skip_serializing_if = "::std::option::Option::is_none")]
-//     pub maximum: Option<usize>,
-
-//     // array specific keys
-//     #[serde(skip_serializing_if = "::std::option::Option::is_none")]
-//     pub items: Option<Box<JsonSchema>>,
-
-//     #[serde(skip_serializing_if = "::std::option::Option::is_none")]
-//     pub min_items: Option<usize>,
-
-//     #[serde(skip_serializing_if = "::std::option::Option::is_none")]
-//     pub max_items: Option<usize>,
-
-//     #[serde(skip_serializing_if = "::std::option::Option::is_none")]
-//     pub unique_items: Option<bool>,
-
-//     #[serde(skip_serializing_if = "::std::option::Option::is_none")]
-//     pub contains: Option<Box<JsonSchema>>,
-
-//     // span tracking fields
-//     // it's a key value spans
-//     #[serde(skip)]
-//     pub current_key_span: Option<proc_macro2::Span>,
-
-//     /// those are used to report better errors, to exactly tell where the errors are
-//     #[serde(skip)]
-//     pub ty_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
-//     #[serde(skip)]
-//     pub title_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
-//     #[serde(skip)]
-//     pub required_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
-//     #[serde(skip)]
-//     pub description_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
-//     #[serde(skip)]
-//     pub items_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
-//     #[serde(skip)]
-//     pub properties_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
-//     #[serde(skip)]
-//     pub default_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
-//     #[serde(skip)]
-//     pub examples_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
-//     #[serde(skip)]
-//     pub enum_values_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
-//     #[serde(skip)]
-//     pub const_value_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
-//     #[serde(skip)]
-//     pub min_lenght_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
-//     #[serde(skip)]
-//     pub max_lenght_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
-//     #[serde(skip)]
-//     pub pattern_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
-//     #[serde(skip)]
-//     pub format_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
-//     #[serde(skip)]
-//     pub minimum_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
-//     #[serde(skip)]
-//     pub maximum_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
-//     #[serde(skip)]
-//     pub min_items_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
-//     #[serde(skip)]
-//     pub max_items_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
-//     #[serde(skip)]
-//     pub unique_items_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
-//     #[serde(skip)]
-//     pub contains_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
-
-//     // indicate the depth of the schema starting from 1 as root
-//     #[serde(skip)]
-//     pub depth: usize,
-// }
-
+/// holds the different uses of the format key in string types
 #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Formats {
@@ -218,7 +101,7 @@ impl std::fmt::Display for Formats {
 /// contains every ident that's considered as a keyword
 ///
 /// ```rust
-/// jsonschema!{
+/// schema2struct!{
 ///     type: ...,
 ///     title: "...",
 ///     default: "...",
@@ -259,7 +142,7 @@ pub enum JsonSchemaKeywords {
 /// stores what's after the `:`
 ///
 /// ```rust
-/// jsonschema!{
+/// schema2struct!{
 ///     type: ... // the `...` is the value
 /// }
 ///     
@@ -323,6 +206,24 @@ impl std::fmt::Display for JsonSchemaValues {
 }
 
 impl JsonSchema {
+    /// converts the struct to an empty json
+    ///
+    /// ```rust
+    /// struct Foo {
+    ///     baz: String    
+    /// }
+    ///
+    /// ```
+    ///
+    /// get's turned into
+    ///
+    /// ```json
+    /// {
+    ///     "baz": ""
+    /// }
+    /// ```
+    ///
+    /// it's used at the generation
     pub fn to_json_sample(&self) -> Value {
         let mut json = Map::new();
 
