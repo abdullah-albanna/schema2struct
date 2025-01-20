@@ -83,6 +83,8 @@ pub fn create_json_schema_struct(input: TokenStream) -> TokenStream {
     }
 
     // Generate the final struct code with span fields
+    //
+    // with special fields
     let expanded = quote! {
         #[derive(Clone, Debug, Default, Serialize, Deserialize)]
         #[serde(rename_all = "camelCase")]

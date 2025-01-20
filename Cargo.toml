@@ -27,4 +27,4 @@ paste = "1"
 inflections = "1"
 
 schema2struct_macros = { path = "./schema2struct_macros" }
-create_json_schema_struct_macro = { path = "./create_json_schema_struct_macro" }
+create_json_schema_struct_macro = { path = "./create_json_schema_struct_macro", version = "0.1" }
