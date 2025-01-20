@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use create_json_schema_struct_macro::create_json_schema_struct;
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::{Map, Number, Value};
 
@@ -26,47 +25,125 @@ pub enum JsonSchemaTypes {
     None,
 }
 
-// the main struct holding all the data about every root and nested schemas
-// creates the schema struct but adds the *_span for every key
-//
-// it also puts the depth field and current_key_span filed
-create_json_schema_struct! {
-    #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-    #[serde(rename_all = "camelCase")]
-    struct JsonSchema {
-        #[serde(rename = "type")]
-        pub ty: JsonSchemaTypes,
+/// the main struct holding all the data about every root and nested schemas
+/// creates the schema struct but adds the *_span for every key
+///
+/// it also puts the depth field and current_key_span filed
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct JsonSchema {
+    #[serde(rename = "type")]
+    pub ty: JsonSchemaTypes,
 
-        pub title: Option<String>,
-        pub description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub title: Option<String>,
 
-        #[serde(rename = "default")]
-        pub default: Option<JsonSchemaValues>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
 
-        #[serde(rename = "examples")]
-        pub examples: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub default: Option<JsonSchemaValues>,
 
-        #[serde(rename = "enum")]
-        pub enum_values: Option<Vec<JsonSchemaValues>>,
+    #[serde(rename = "examples")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub examples: Option<Vec<String>>,
 
-        #[serde(rename = "const")]
-        pub const_value: Option<JsonSchemaValues>,
+    #[serde(rename = "enum")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub enum_values: Option<Vec<JsonSchemaValues>>,
 
-        pub properties: Option<HashMap<String, JsonSchema>>,
-        pub required: Option<Vec<String>>,
-        pub min_lenght: Option<usize>,
-        pub max_lenght: Option<usize>,
-        pub pattern: Option<String>,
-        pub format: Option<Formats>,
-        pub minimum: Option<usize>,
-        pub maximum: Option<usize>,
-        pub items: Option<Box<JsonSchema>>,
-        pub min_items: Option<usize>,
-        pub max_items: Option<usize>,
-        pub unique_items: Option<bool>,
-        pub contains: Option<Box<JsonSchema>>,
+    #[serde(rename = "const")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub const_value: Option<JsonSchemaValues>,
 
-    }
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub properties: Option<HashMap<String, JsonSchema>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub required: Option<Vec<String>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub min_lenght: Option<usize>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_lenght: Option<usize>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pattern: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub format: Option<Formats>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub minimum: Option<usize>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub maximum: Option<usize>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub items: Option<Box<JsonSchema>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub min_items: Option<usize>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_items: Option<usize>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub unique_items: Option<bool>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub contains: Option<Box<JsonSchema>>,
+
+    // tracking fields
+    #[serde(skip)]
+    pub depth: usize,
+    #[serde(skip)]
+    pub current_key_span: Option<proc_macro2::Span>,
+    #[serde(skip)]
+    pub struct_name: Option<String>,
+    #[serde(skip)]
+    pub struct_name_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
+    #[serde(skip)]
+    pub ty_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
+    #[serde(skip)]
+    pub title_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
+    #[serde(skip)]
+    pub description_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
+    #[serde(skip)]
+    pub default_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
+    #[serde(skip)]
+    pub examples_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
+    #[serde(skip)]
+    pub enum_values_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
+    #[serde(skip)]
+    pub const_value_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
+    #[serde(skip)]
+    pub properties_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
+    #[serde(skip)]
+    pub required_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
+    #[serde(skip)]
+    pub min_lenght_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
+    #[serde(skip)]
+    pub max_lenght_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
+    #[serde(skip)]
+    pub pattern_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
+    #[serde(skip)]
+    pub format_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
+    #[serde(skip)]
+    pub minimum_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
+    #[serde(skip)]
+    pub maximum_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
+    #[serde(skip)]
+    pub items_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
+    #[serde(skip)]
+    pub min_items_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
+    #[serde(skip)]
+    pub max_items_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
+    #[serde(skip)]
+    pub unique_items_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
+    #[serde(skip)]
+    pub contains_span: Option<(proc_macro2::Span, proc_macro2::Span)>,
 }
 
 /// holds the different uses of the format key in string types
