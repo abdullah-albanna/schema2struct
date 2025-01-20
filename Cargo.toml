@@ -9,7 +9,7 @@ repository = "https://github.com/abdullah-albanna/schema2struct"
 homepage = "https://github.com/abdullah-albanna/schema2struct"
 documentation = "https://docs.rs/schema2struct"
 readme = "README.md"
-keywords = ["json", "macro", "rust", "codegen", "struct", "schema"]
+keywords = ["json", "macro", "codegen", "struct", "schema"]
 categories = ["data-structures"]
 
 [lib]
